@@ -1,0 +1,62 @@
+{
+  "entrypoints": {
+    "widgets/layerlist-widget/map_layer_list/dist/runtime/widget": {
+      "chunks": [
+        {
+          "id": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+          "names": [
+            "widgets/layerlist-widget/map_layer_list/dist/runtime/widget"
+          ],
+          "modules": [
+            "./jimu-core/lib/set-public-path.ts",
+            "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[3].use[1]!./node_modules/resolve-url-loader/index.js??ruleSet[1].rules[3].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[3].use[3]!./your-extensions/widgets/layerlist-widget/map_layer_list/src/runtime/app.css",
+            "./node_modules/css-loader/dist/runtime/api.js",
+            "./node_modules/css-loader/dist/runtime/noSourceMaps.js",
+            "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js",
+            "./node_modules/style-loader/dist/runtime/insertBySelector.js",
+            "./node_modules/style-loader/dist/runtime/insertStyleElement.js",
+            "./node_modules/style-loader/dist/runtime/setAttributesWithoutAttributes.js",
+            "./node_modules/style-loader/dist/runtime/styleDomAPI.js",
+            "./node_modules/style-loader/dist/runtime/styleTagTransform.js",
+            "./your-extensions/widgets/layerlist-widget/map_layer_list/src/runtime/app.css",
+            "./your-extensions/widgets/layerlist-widget/map_layer_list/src/runtime/widget.tsx"
+          ]
+        }
+      ]
+    },
+    "widgets/layerlist-widget/map_layer_list/dist/setting/setting": {
+      "chunks": [
+        {
+          "id": "widgets/layerlist-widget/map_layer_list/dist/setting/setting",
+          "names": [
+            "widgets/layerlist-widget/map_layer_list/dist/setting/setting"
+          ],
+          "modules": [
+            "./jimu-core/lib/set-public-path.ts",
+            "./your-extensions/widgets/layerlist-widget/map_layer_list/src/setting/setting.tsx"
+          ]
+        }
+      ]
+    },
+    "widgets/simple/dist/runtime/widget": {
+      "chunks": [
+        {
+          "id": "widgets/simple/dist/runtime/widget",
+          "names": [
+            "widgets/simple/dist/runtime/widget"
+          ],
+          "modules": [
+            "./jimu-core/lib/set-public-path.ts",
+            "./your-extensions/widgets/simple/src/runtime/widget.tsx"
+          ]
+        }
+      ]
+    }
+  },
+  "chunks": [],
+  "errors": [],
+  "warnings": [],
+  "outputPath": "C:\\Users\\djuracek\\ArcGISExperienceBuilder\\client\\dist-prod",
+  "publicPath": "",
+  "version": "5.89.0"
+}

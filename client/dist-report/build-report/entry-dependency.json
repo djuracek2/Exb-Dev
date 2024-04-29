@@ -1,0 +1,50 @@
+{
+  "nodes": [
+    {
+      "name": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+      "size": 32711
+    },
+    {
+      "name": "widgets/layerlist-widget/map_layer_list/dist/setting/setting",
+      "size": 1733
+    },
+    {
+      "name": "widgets/simple/dist/runtime/widget",
+      "size": 1507
+    }
+  ],
+  "links": [
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+      "target": "calcite-components/index"
+    },
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+      "target": "jimu-arcgis/index"
+    },
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+      "target": "jimu-core/index"
+    },
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+      "target": "jimu-core/react"
+    },
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/runtime/widget",
+      "target": "jimu-ui/index"
+    },
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/setting/setting",
+      "target": "jimu-core/index"
+    },
+    {
+      "source": "widgets/layerlist-widget/map_layer_list/dist/setting/setting",
+      "target": "jimu-ui/advanced/setting-components"
+    },
+    {
+      "source": "widgets/simple/dist/runtime/widget",
+      "target": "jimu-core/index"
+    }
+  ]
+}
