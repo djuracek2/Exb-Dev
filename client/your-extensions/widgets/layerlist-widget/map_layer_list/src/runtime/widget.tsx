@@ -20,6 +20,7 @@ import { string } from "prop-types";
 import { Icon } from "jimu-ui";
 import { Button } from "jimu-ui";
 import { UpCircleOutlined } from "jimu-icons/outlined/directional/up-circle";
+import reactiveUtils from "@arcgis/core/core/reactiveUtils";
 
 export default function Map(props: AllWidgetProps<any>) {
   const [jimuMapView, setJimuMapView] = useState<JimuMapView>();
@@ -29,8 +30,49 @@ export default function Map(props: AllWidgetProps<any>) {
   const [labels, setLabels] = useState([false, false, false, false, false, false, false]);
   const [subLabels, setSubLabels] = useState([false, false])
   const [transparency, setTransparency] = useState(1);
-  const [zoom, setZoom] = useState(14);
+  const [zoom, setZoom] = useState();
   const [groupTitles, setGroupTitles] = useState([])
+  const [groupBool, setGroupBool] = useState([
+    {
+      groupId: 0,
+      isVisible: false
+    },
+    {
+      groupId: 1,
+      isVisible: false
+    },
+    {
+      groupId: 2,
+      isVisible: false
+    },
+    {
+      groupId: 3,
+      isVisible: false
+    },
+    {
+      groupId: 4,
+      isVisible: false
+    },
+    {
+      groupId: 5,
+      isVisible: false
+    },
+    {
+      groupId: 6,
+      isVisible: false
+    }
+
+  ])
+  const [subGroup, setSubGroups] = useState([
+    {
+      groupId: 'sub-3',
+      isVisible: false
+    },
+    {
+      groupId: 'sub-6',
+      isVisible: false
+    }
+  ])
 
   const transparencyControlStyles = {
     display: "inline-block",
@@ -65,39 +107,82 @@ export default function Map(props: AllWidgetProps<any>) {
     paddingLeft: "2px",
   };
 
+  const handleGroup = (groupId) => {
+    const updateGroups = [...groupBool];
+    updateGroups.forEach(G => {
+      if (G.groupId === groupId) {
+        G.isVisible = !G.isVisible;
+      }
+    });
+
+    setGroupBool(updateGroups)
+    console.log(updateGroups)
+
+  }
+
+  const handleSubGroup = (groupId) => {
+
+    const updateSubGroups = [...subGroup];
+    updateSubGroups.forEach(subG => {
+      if (subG.groupId === groupId) {
+        subG.isVisible = !subG.isVisible;
+      }
+    });
+
+    setSubGroups(updateSubGroups)
+
+      console.log(subGroup)
+    // let newSubGroup = {
+    //   groupId: groupId,
+    //   isVisible: false
+    // }
+}
+
+
 
   const handleSubGroupIconVisible = (groupId, SubGroupId) => {
+// console.log(subGroup)
+    handleSubGroup(groupId)
+
+    const SubIsVisible = subGroup.filter(item => item.groupId === groupId)
+    const SubV = SubIsVisible[0].isVisible
+
+    
+    let str = groupId.toString()
     // let togVal = toggleVal;
     let layerID = groupId;
 
+    if (str.includes("sub")) {
+     str = str.substring(4)
+    }
+
     const subGroupLayers = document.querySelectorAll(`[data-id="${groupId}"]`);
+    // setSubLabels(prevState => {
+    //   const newState = [...prevState];
+    //   newState[groupId] = !newState[groupId];
+    //   toggleVal = newState[groupId];
+    //   toggleAllLayerVisibility(groupId, layerid, toggleVal, subId);
+    //   return newState;
+    // })
 
-    subGroupLayers.forEach((layer) => {
-      const layerId = layer.getAttribute("value");
-      layerID = layerId
-      toggleLayerVisibility(layerId, groupId);
-    });
-
-    toggleSubGroupIcon(groupId, SubGroupId)
+    // subGroupLayers.forEach((layer) => {
+    //   const layerId = layer.getAttribute("value");
+    //   layerID = layerId
+      
+    //   toggleLayerVisibility(layerId, groupId, SubV);
+    // });
+    checkSubGroupClick(groupId, SubV)
+    toggleSubGroupIcon(groupId)
+    toggleAllIcon(str)
+    // checkGroupClick(layerID, groupId, SubV)
   }
 
-
-    // separate here
-
-  const toggleSubGroupIcon = (groupId, SubGroupId) => {
+  const toggleSubGroupIcon = (groupId, SubGroupId, bool) => {
     const allGroupLayers = [];
     const groupLayersVis = [];
     const groupLayerHid = [];
 
     const subGroupLayers = document.querySelectorAll(`[data-id="${groupId}"]`);
-    // const subGroupParent = document.querySelectorAll(`[group-id="${groupId}"]`);
-    // console.log(subGroupParent)
-
-    // const groupLayers = document.querySelectorAll(`[data-id="${Id}"]`);
-    // const subGroupLayers = document.querySelectorAll(`[data-id="sub-${Id}"]`);
-
-    // const allLayers = [...groupLayers, ...subGroupLayers]
-    // console.log(allLayers)
 
     subGroupLayers.forEach((layer) => {
       const layerId = layer.getAttribute("value");
@@ -120,13 +205,22 @@ export default function Map(props: AllWidgetProps<any>) {
     let actionElementSub;
 
     if (groupLayersVis.length !== allGroupLayers.length) {
-      actionElementSub = document.querySelector(`[group-id="${groupId}"]`);
+
+      if (bool !== "undefined" && bool) {
+        actionElementSub = document.querySelector(`[data-layer-id="${bool}"]`);
+      } else {
+        actionElementSub = document.querySelector(`[group-id="${groupId}"]`);
+      }
       // set icons on group
       if (actionElementSub) {
         actionElementSub.setAttribute("icon", "square");
       }
     } else {
-      actionElementSub = document.querySelector(`[group-id="${groupId}"]`);
+      if (bool !== "undefined" && bool) {
+         actionElementSub = document.querySelector(`[data-layer-id="${SubGroupId}"]`);
+      } else {
+        actionElementSub = document.querySelector(`[group-id="${groupId}"]`);
+      }
       // set icons on group
       if (actionElementSub) {
         actionElementSub.setAttribute("icon", "check-square");
@@ -144,13 +238,24 @@ export default function Map(props: AllWidgetProps<any>) {
     }
     console.log(groupId)
     let toggleVal;
-    setLabels(prevState => {
-      const newState = [...prevState];
-      newState[groupId] = !newState[groupId];
-      toggleVal = newState[groupId];
-      toggleAllLayerVisibility(groupId, layerid, toggleVal, subId);
-      return newState;
-    })
+
+
+    handleGroup(groupId)
+
+    
+    const GroupIsVisible = groupBool.filter(item => item.groupId === groupId)
+    const GroupV = GroupIsVisible[0].isVisible;
+
+    toggleAllLayerVisibility(groupId, layerid, GroupV)
+    //UNCOMMENT THIS FOR PREVIOUS FUNCTIONALITY
+    
+    // setLabels(prevState => {
+    //   const newState = [...prevState];
+    //   newState[groupId] = !newState[groupId];
+    //   toggleVal = newState[groupId];
+    //   toggleAllLayerVisibility(groupId, layerid, toggleVal, subId);
+    //   return newState;
+    // })
 
     // console.log(groupIconVisible);
   };
@@ -228,6 +333,10 @@ export default function Map(props: AllWidgetProps<any>) {
     });
   };
 
+  // reactiveUtils.watch(()=> [jimuMapView?.view.zoom], (zoom) => {
+  //   setZoom(zoom)
+  // })
+
   let groupIdCounter = 0;
 
   const processLayers = (layers: any[], groupId: number | string = "", subGroupId: string) => {
@@ -240,7 +349,8 @@ export default function Map(props: AllWidgetProps<any>) {
     console.log(layers)
 
     layers2.forEach((layerG) => groupTitles.push(layerG.title))
-    console.log(groupTitles)
+    console.log('group titles are: ', groupTitles)
+    console.log('subgroup titles are: ', subGroupTitles)
     // setGroupTitles(groupTitles)
 
     layers.forEach((layer, i) => {
@@ -254,6 +364,13 @@ export default function Map(props: AllWidgetProps<any>) {
           console.log(layer.title)
           subGroupTitles.push(layer.title)
           console.log(subGroupTitles)
+
+          // let newSubGroup = {
+          //   groupId: groupId,
+          //   isVisible: false
+          // }
+          // setSubGroups(prevState => [...prevState, newSubGroup]);
+
 
           layerListItems.push(
             <CalciteAccordionItem
@@ -291,6 +408,7 @@ export default function Map(props: AllWidgetProps<any>) {
             <CalciteAction
               data-id={currentGroupId}
               id={`action-${layer.id}`}
+              group-id={currentGroupId}
               //sub-id={subGroupId ? `sub-group-${currentGroupId}` : `group-${currentGroupId}`}
               className={`group-${currentGroupId}`}
               slot="actions-end"
@@ -425,8 +543,6 @@ export default function Map(props: AllWidgetProps<any>) {
   const toggleLayerVisibility = (layerId: any, Id: any, toggleVal: any) => {
     // Find the layer in the webmap
     const layer = jimuMapView?.view?.map?.findLayerById(layerId);
-    const subId = `sub-${Id}`;
-
 
     if (layer) {
       // Toggle the layer's visibility
@@ -447,41 +563,41 @@ export default function Map(props: AllWidgetProps<any>) {
       }
     }
 
+    let str = Id.toString()
+    console.log( typeof str)
+
+    if (str.includes("sub")) {
+      toggleSubGroupIcon(Id)
+    } else {
+      toggleGroupIcon(layerId, Id, toggleVal)
+    }
+
+    if (str.includes("sub")) {
+      Id = str.substring(4)
+    }
+
+    toggleAllIcon(Id)
+
     // toggleSubGroupIcon(layerId, Id, toggleVal)
 
-    if (subId) {
-      if (subId.includes("sub")) {
-        toggleSubGroupIcon(Id, layerId, toggleVal)
-      }
-    }
-   
-    toggleGroupIcon(layerId, Id, toggleVal)
-    // set icon of group
-      // if (groupIcon) {
-      //   groupIcon.setAttribute(
-      //     "icon",
-      //     layer.visible ? "check-square" : "square"
-      //   );
-      // }
-
-      // if (groupLayers) {
-      //   groupLayers.setAttribute(
-      //     "icon",
-      //     layer.visible ? "check-square" : "square"
-      //   );
-      // }
-    // } else {
-    //   //change icon of accordion items
-    //   // const accordionItem = document.querySelector(`.group-${Id}`);
-    //   // if (accordionItem) {
-    //   //   accordionItem.setAttribute("icon", Id ? "check-square" : "square");
-    //   // }
+    // if (subId) {
+    //   if (subId.includes("sub")) {
+    //     toggleSubGroupIcon(Id, layerId, toggleVal)
+    //   }
     // }
+
+    // const subBool = true;
+   
+    // THIS NEEDED FOR GROUP LAYER CHECKS
+    // TOGGLE SUB FOR SUB GROUPS
     
+    // toggleGroupIcon(layerId, Id, toggleVal)
+
   };
 
-  const checkGroupClick = (layerId, Id, toggleVal) => {
-    if(toggleVal) {
+
+  const checkSubGroupClick = (Id, toggleVal) => {
+    if (toggleVal) {
       const groupIcon = document.querySelector(`.group-${Id}`);
       // set icons on group
       if (groupIcon) {
@@ -507,43 +623,111 @@ export default function Map(props: AllWidgetProps<any>) {
           }
         }
       })
-   } else if(toggleVal === "undefined") {
+   } else {
       const groupIcon = document.querySelector(`.group-${Id}`);
       // set icons on group
       if (groupIcon) {
         groupIcon.setAttribute("icon", "square");
       }
 
-      const layerV = jimuMapView?.view?.map?.findLayerById(layerId);
-      if (layerV) {
-        layerV.visible = false;
+      const groupLayers = document.querySelectorAll(`[data-id="${Id}"]`);
 
-        const actionElement = document.getElementById(`action-${layerId}`);
-  
-        if (actionElement) {
-          actionElement.setAttribute(
-            "icon", "square"
-          );
+      groupLayers.forEach((layer) => {
+        const layerId = layer.getAttribute("value");
+
+      const layerV = jimuMapView?.view?.map?.findLayerById(layerId);
+
+        if (layerV) {
+          layerV.visible = false;
+
+          const actionElement = document.getElementById(`action-${layerId}`);
+    
+          if (actionElement) {
+            actionElement.setAttribute(
+              "icon", "square"
+            );
+          }
         }
-      }
+      })
     }
 }
 
+  const checkGroupClick = (layerId, Id, toggleVal) => {
+    if (toggleVal) {
+      const groupIcon = document.querySelector(`.group-${Id}`);
+      // set icons on group
+      if (groupIcon) {
+        groupIcon.setAttribute("icon", "check-square");
+      }
+
+      const groupLayers = document.querySelectorAll(`[data-id="${Id}"]`);
+
+      groupLayers.forEach((layer) => {
+        const layerId = layer.getAttribute("value");
+
+      const layerV = jimuMapView?.view?.map?.findLayerById(layerId);
+
+        if (layerV) {
+          layerV.visible = true;
+
+          const actionElement = document.getElementById(`action-${layerId}`);
+    
+          if (actionElement) {
+            actionElement.setAttribute(
+              "icon", "check-square"
+            );
+          }
+        }
+      })
+   } else {
+      const groupIcon = document.querySelector(`.group-${Id}`);
+      // set icons on group
+      if (groupIcon) {
+        groupIcon.setAttribute("icon", "square");
+      }
+
+      const groupLayers = document.querySelectorAll(`[data-id="${Id}"]`);
+
+      groupLayers.forEach((layer) => {
+        const layerId = layer.getAttribute("value");
+
+      const layerV = jimuMapView?.view?.map?.findLayerById(layerId);
+
+        if (layerV) {
+          layerV.visible = false;
+
+          const actionElement = document.getElementById(`action-${layerId}`);
+    
+          if (actionElement) {
+            actionElement.setAttribute(
+              "icon", "square"
+            );
+          }
+        }
+      })
+    }
+}
+
+
   // function just to toggle group icon
-  const toggleGroupIcon = (layerId, Id, toggleVal) => {
-  
-    //checks group icon and if all layers are visible or not
+  const toggleGroupIcon = (layerId, Id,toggleVal, subBool) => {
+
+    if (subBool) {
+      return
+    } else {
+
+       //checks group icon and if all layers are visible or not
     const allGroupLayers = [];
     const groupLayersVis = [];
     const groupLayerHid = [];
 
     const groupLayers = document.querySelectorAll(`[data-id="${Id}"]`);
-    const subGroupLayers = document.querySelectorAll(`[data-id="sub-${Id}"]`);
+    // const subGroupLayers = document.querySelectorAll(`[data-id="sub-${Id}"]`);
 
-    const allLayers = [...groupLayers, ...subGroupLayers]
-    console.log(allLayers)
+    // const allLayers = [...groupLayers, ...subGroupLayers]
+    // console.log(allLayers)
 
-    allLayers.forEach((layer) => {
+    groupLayers.forEach((layer) => {
       const layerId = layer.getAttribute("value");
       const layerV = jimuMapView?.view?.map?.findLayerById(layerId);
 
@@ -569,59 +753,135 @@ export default function Map(props: AllWidgetProps<any>) {
       }
     } else {
       const groupIcon = document.querySelector(`.group-${Id}`);
+      // handleGroup(Id)
       // set icons on group
       if (groupIcon) {
         groupIcon.setAttribute("icon", "check-square");
       }
     }
+
+    }
+  
+   
   //}
   }
+
+  const toggleAllIcon = (Id) => {
+    console.log('toggle all icon')
+
+         //checks group icon and if all layers are visible or not
+         const allGroupLayers = [];
+         const groupLayersVis = [];
+         const groupLayerHid = [];
+     
+         const groupLayers = document.querySelectorAll(`[data-id="${Id}"]`);
+         const subGroupLayers = document.querySelectorAll(`[data-id="sub-${Id}"]`);
+     
+         const allLayers = [...groupLayers, ...subGroupLayers]
+         // console.log(allLayers)
+     
+         allLayers.forEach((layer) => {
+           const layerId = layer.getAttribute("value");
+           const layerV = jimuMapView?.view?.map?.findLayerById(layerId);
+     
+           if (layerV) {
+             if (layerV.visible) {
+               groupLayersVis.push(layerId)
+             } else {
+               groupLayerHid.push(layerId)
+             }
+             if (layerV) {
+               allGroupLayers.push(layerId)
+             }
+           }
+         });
+     
+         // add logic for subgroup columns here?
+     
+         if (groupLayersVis.length !== allGroupLayers.length) {
+           const groupIcon = document.querySelector(`[group-id="${Id}"]`);
+           // set icons on group
+           if (groupIcon) {
+             groupIcon.setAttribute("icon", "square");
+           }
+         } else {
+          const groupIcon = document.querySelector(`[group-id="${Id}"]`);
+           // handleGroup(Id)
+           // set icons on group
+           if (groupIcon) {
+             groupIcon.setAttribute("icon", "check-square");
+           }
+         }
+     
+         }
+        
+  
 
   const toggleAllLayerVisibility = (groupId, id, toggleVal, subId) => {
     let togVal = toggleVal;
     let layerID;
 
 
-    const actionElement = document.querySelector(`.group-${groupId}`);
-    if (actionElement) {
-      actionElement.setAttribute(
-        "icon",
-        groupIconVisible ? "check-square" : "square"
-      );
-    }
-    const groupLayers = document.querySelectorAll(`[data-id="${groupId}"]`);
+    // const actionElement = document.querySelector(`.group-${groupId}`);
+    // if (actionElement) {
+    //   actionElement.setAttribute(
+    //     "icon",
+    //     groupIconVisible ? "check-square" : "square"
+    //   );
+    // }
+    // const groupLayers = document.querySelectorAll(`[data-id="${groupId}"]`);
 
-    groupLayers.forEach((layer) => {
-      const layerId = layer.getAttribute("value");
-      console.log(layer)
-      layerID = layerId
-      console.log(layerId)
-      toggleLayerVisibility(layerId, groupId, togVal);
-    });
-
-    // gets sublayer group main one
+    // groupLayers.forEach((layer) => {
+    //   const layerId = layer.getAttribute("value");
+    //   // console.log(layer)
+    //   layerID = layerId
+    //   // console.log(layerId)
+    //   toggleLayerVisibility(layerId, groupId, togVal);
+    // });
 
     // const subGroupLayers = document.querySelectorAll(`[data-id="sub-${groupId}"]`);
-    // let elementID;
 
-    // subGroupLayers.forEach(item => {
-    //   if (item.getAttribute('data-layer-id') !== null) {
-    //     elementID = item;
-    //   }
-    // })
+    // subGroupLayers.forEach((layer) => {
+    //   const layerId = layer.getAttribute("value");
+    //   layerID = layerId
+    //   toggleLayerVisibility(layerId, groupId, togVal);
+    // });
 
-    // const SubGroupId = elementID.getAttribute("data-layer-id")
-    // console.log(elementID)
-    // const layers = jimuMapView.view.map.layers.items;
+    const subGId = `sub-${groupId}`
+
+    
+    // gets sublayer group main one
+
+    const subGroupLayers = document.querySelectorAll(`[data-id="sub-${groupId}"]`);
+    let elementID;
+    let SubV;
 
 
-  //  const subGroup =  layers.filter(layer => layer.type == "group")
+    if (subGroupLayers.length > 0) {
+      subGroupLayers.forEach(item => {
+        if (item.getAttribute('data-layer-id') !== null) {
+          elementID = item;
+        }
+      })
+  
+      const SubGroupId = elementID.getAttribute("data-layer-id")
+      console.log(elementID)
+      handleSubGroup(groupId)
+  
+      const SubIsVisible = subGroup.filter(item => item.groupId === subGId)
+      // let SubV = SubIsVisible[0].isVisible
 
-  //  console.log(subGroup)
-// THINK ABOUT GETTING SUBGROUPICON HERE
-    //handleSubGroupIconVisible(SubGroupId, groupId)
-    toggleGroupIcon(layerID, groupId, toggleVal)
+      SubV = toggleVal
+
+      checkSubGroupClick(subGId, toggleVal)
+      toggleSubGroupIcon(subGId, SubGroupId, SubV)
+      
+    }
+  
+    
     checkGroupClick(layerID, groupId, toggleVal)
+    toggleGroupIcon(layerID, groupId)
+   
   };
 
   useEffect(() => {
